@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>TFISP</title>
+	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	
+	<script src="/static/js/ace-src-min/ace.js" type="text/javascript" charset="utf-8"></script>
+	
+	<script src="http://cdn.jsdelivr.net/qtip2/3.0.3/jquery.qtip.min.js"></script>
+	<link rel="stylesheet" href="http://cdn.jsdelivr.net/qtip2/3.0.3/jquery.qtip.min.css">
+	
+	<script src="/static/js/examples.js" type="text/javascript" charset="utf-8"></script>
+	
+	<script>
+		var editor;
+		$(document).ready(function() {
+			editor = ace.edit("editor");
+			//editor.setTheme("ace/theme/monokai");
+			editor.getSession().setMode("ace/mode/python");
+			editor.$blockScrolling = Infinity;
+			
+			$(".qtip-items").qtip({
+				content: {
+					text: ""
+				},
+				style: {
+					classes: 'qtipCustomClass'
+				},
+				hide: {
+					fixed: true,
+					delay: 1000
+				},
+				
+				position: {
+					my: 'left center',  // Position my top left...
+					at: 'right center' // at the bottom right of...
+				}
+			});
+		});
+		
+		function checkCode() {
+			$(".loader, .gery-bg").show();
+			$.ajax({
+				method: 'POST',
+				url: 'run',
+				data: "code=" + encodeURIComponent(editor.getValue()),
+				success: function(data) {
+					$(".loader, .gery-bg").hide();
+					$("#responsesTable tr").hide();
+					
+					if (data.response) {
+						$("#otherResponseRow td").html(data.response)
+						$("#otherResponseRow").show();
+					}
+					
+					if (data.pyAnswer) {
+						$("#pyAnswerRow td").html(data.pyAnswer)
+						$("#pyAnswerRow").show();
+					}
+					
+					if (data.pyError) {
+						//$("#pyErrorRow td").html(data.pyError)
+						$('#pyErrorRow img').qtip('option', 'content.text', data.pyError);
+						$("#pyErrorRow").show();
+					}
+					
+					if (data.dafCode) {
+						$('#dafCodeRow img').qtip('option', 'content.text', data.dafCode);
+						$("#dafCodeRow").show();
+					}
+					
+					if (data.dafAnswer) {
+						$("#dafAnswerRow td").html(data.dafAnswer)
+						$("#dafAnswerRow").show();
+					}
+					
+					if (data.dafError) {
+						$("#dafErrorRow td").html(data.dafError)
+						$("#dafErrorRow").show();
+					}
+				
+				},
+				error: function() {
+					$(".loader, .gery-bg").hide();
+					$("#responsesTable tr").hide();
+					$("#otherResponseRow td").html("Error connecting to server")
+					$("#otherResponseRow").show();
+				}
+			});
+		}
+		
+		function loadExample(codeToLoad) {
+			editor.setValue(codeToLoad,-1);
+		}
+
+	</script>
+	
+	<style>
+		#main-content {
+			margin: 
+		}
+		
+		.container {
+			margin-left: 0;
+		}
+		
+		.panel {
+			display: inline-block;
+			vertical-align: top;
+			margin-right: 40px;
+		}
+		
+		div textarea.form-control {
+			height: 300px;
+			resizeable: none;
+		}
+		
+		ol a, li a {
+			cursor: pointer;
+		}
+		
+		#editor { 
+			height: 400px;
+		}
+		
+		#responsesTable tr {
+			display: none;
+		}
+		
+		#responsesTable th {
+			vertical-align: top;
+		}
+		
+		.qtip-content {
+			font-size:14px;
+			line-height:20px;
+		}
+		
+		.preloader {
+			position: relative;
+		}
+		
+		.loader {
+			top: 0;
+			z-index: 100;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			margin:25% auto;
+			box-sizing:border-box;
+			width:50px;
+			height:50px;
+			border-radius:50%;
+			background:linear-gradient(rgba(64, 150, 238, 1) -50%,rgba(64, 150, 238, 0) 60%);
+			animation:roll-r 6s linear infinite;
+			position:absolute;
+			display:none;
+		}
+
+		.preloader>.loader {
+		  padding:5px;
+		  animation:roll-l 2s linear infinite;
+		}
+		.preloader>.loader:after {
+		  content:"";
+		  display:block;
+		  width:40px;
+		  height:40px;
+		  border-radius:50%;
+		  background-color:#e0e0e0;
+		}
+
+		@keyframes roll-r {
+		  0% {transform:rotate(0deg);}
+		  100% {transform:rotate(360deg);}
+		}
+		@keyframes roll-l {
+		  0% {transform:rotate(0deg);}
+		  100% {transform:rotate(-360deg);}
+		}
+		
+		.gery-bg {
+			display:none;
+			background-color: #ccc;
+			position:absolute;
+			width: 100%;
+			height: 100%;
+			z-index: 90;
+			opacity: 0.6;
+			top:0;
+			left:0;
+		}
+		
+		.qtipCustomClass {
+			max-width: 600px;
+			width: 600px;
+		}
+	</style>
+</head>
+<body>
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand">Project for TFISP</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a>Home</a></li>
+            <!--<li><a href="#about">About</a></li>-->
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+	<div class="container theme-showcase" role="main" style="margin-top:70px;">
+		<div class="jumbotron" style="padding:25px;">
+			<h1 style="margin-top:0;">Window to CS - HW Tool</h1>
+			<p>Use this tool to help write your program, to check it's correctness both syntactic and semantic</p>
+		</div>
+	</div>
+	
+	<div class="row" style="padding-left:15px;">
+        <div class="col-sm-12">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Code Examples &<br>Skeletons</h3>
+            </div>
+            <div class="panel-body">
+				<ul>
+					<li>
+						Examples<br>
+						<ol style="padding-left: 10px;">
+							<li><a onclick="loadExample(noDafExample);">Unchecked Code</a></li>
+							<li><a onclick="loadExample(example1);">Add & Subtract</a></li>
+							<li><a onclick="loadExample(example2);">Abs</a></li>
+							<li><a onclick="loadExample(example3);">Find in Array using while</a></li>
+							<li><a onclick="loadExample(example4);">Find in Array using for</a></li>
+						</ol>
+					</li>
+					<li>HW<br>
+						<ul style="padding-left: 10px;">
+							<li><a onclick="loadExample(hw1_8);">HW 1.8</a> - (<a onclick="loadExample(hw1_8sol)">solution</a>)</li>
+							<!--<li><a onclick="loadExample(hw1_9);">HW 1.9</a> - <a onclick="loadExample(hw1_9sol)">solution</a></li>-->
+							<li><a onclick="loadExample(hw2);">HW 2</a> - (<a onclick="loadExample(hw2sol)">solution</a>)</li>
+						</ul>
+					</li>
+					
+					
+				</ul>
+              
+            </div>
+          </div>
+          <div class="panel panel-primary" style="min-width: 721px; max-width: 858px;">
+            <div class="panel-heading">
+              <h3 class="panel-title">Code</h3>
+            </div>
+            <div class="panel-body preloader">
+				<div class="loader"></div>
+				<div class="gery-bg"></div>
+				<div id="editor">def Main():
+	print("Hello World!")
+	
+#  <---  use the examples here, or the HW skeleton to check your code!
+
+# You can also run your python code without Dafny Checks by Adding "# @noDafny" at the top!
+# *Dafny Translation currently does not support code outside a function
+
+				</div>
+				<div>
+					<div style="display:inline-block;">
+						<table id="responsesTable">
+							<tbody>
+								<tr id="pyAnswerRow">
+									<th>PyAnswer:</th>
+									<td></td>
+								</tr>
+								<tr id="pyErrorRow">
+									<th>PyError:</th>
+									<td><img style="width:18px;" class="qtip-items" src="/static/x.png" /></td>
+								</tr>
+								<tr id="dafCodeRow">
+									<th>dafCode:</th>
+									<td><img style="width:18px;" class="qtip-items" src="/static/i.png" /></td>
+								</tr>
+								<tr id="dafAnswerRow">
+									<th>dafAnswer:</th>
+									<td></td>
+								</tr>
+								<tr id="dafErrorRow">
+									<th>dafError:</th>
+									<td></td>
+								</tr>
+								<tr id="otherResponseRow">
+									<th>Resposne:</th>
+									<td></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div style="float:right; display:inline-block;">
+						<button class="btn btn-lg btn-primary" onclick="checkCode();">Submit</button>
+						<button class="btn btn-lg btn-default" onclick="editor.setValue('',-1);">Clear</button>
+					</div>
+				</div>
+            </div>
+          </div>
+        </div>
+	</div>
+</body>
+</html>
